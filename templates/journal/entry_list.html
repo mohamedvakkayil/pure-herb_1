@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Records — Pure Herb{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="records-header">
+    <h1 class="records-title">Records</h1>
+    <a href="{% url 'journal:home' %}" class="records-back">← Home</a>
+  </div>
+
+  <div class="records-toolbar">
+    <div class="records-filters records-filters--compact">
+      <form class="records-filter-range" method="get" action="{% url 'journal:entry_list' %}">
+        <input type="text" name="date_from" id="records-date-from" value="{{ date_from }}" class="records-filter-input flatpickr-date" placeholder="From" autocomplete="off">
+        <span class="records-filter-sep">–</span>
+        <input type="text" name="date_to" id="records-date-to" value="{{ date_to }}" class="records-filter-input flatpickr-date" placeholder="To" autocomplete="off">
+        <button type="submit" class="btn btn-ghost btn--sm">Apply</button>
+        {% if date_from or date_to %}
+        <a href="{% url 'journal:entry_list' %}" class="records-filter-clear">Clear</a>
+        {% endif %}
+      </form>
+    </div>
+    <div class="records-toolbar-actions">
+      <a href="{% url 'journal:records_export' %}?date_from={{ date_from }}&amp;date_to={{ date_to }}" class="btn btn-secondary btn--sm">Export to Excel</a>
+      <button type="button" class="btn btn-ghost btn--sm" onclick="window.print(); return false;">Print</button>
+      <label class="records-logs-toggle">
+        <input type="checkbox" id="show-logs-toggle" class="records-logs-checkbox">
+        <span class="records-logs-label">Show activity logs</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="records-table-card">
+    <div class="table-responsive">
+      <table class="entry-table entry-table--records">
+        <thead>
+          <tr>
+            <th class="col-date">Date</th>
+            <th class="col-reference">Reference</th>
+            <th class="col-type">Type</th>
+            <th class="col-description">Description</th>
+            <th class="text-right col-total">Total (AED)</th>
+            <th class="col-created-by">Created by</th>
+            <th class="col-details">Details</th>
+          </tr>
+        </thead>
+        <tbody id="records-tbody">
+        {% for entry in entries %}
+          <tr class="entry-row" data-href="{% url 'journal:entry_detail' entry.pk %}">
+            <td class="col-date">{{ entry.date|date:"M j, Y" }}</td>
+            <td class="col-reference text-muted">{{ entry.reference|default:"—" }}</td>
+            <td class="col-type">
+              <span class="records-type-badge records-type-badge--{% if entry.entry_type == 'sale' %}sale{% else %}expense{% endif %}">{{ entry.get_entry_type_display }}</span>
+            </td>
+            <td class="col-description">{{ entry.description|truncatewords:12 }}</td>
+            <td class="text-right records-amount col-total"><span class="records-amount-currency">AED</span> {{ entry.total_debit|floatformat:2 }}</td>
+            <td class="col-created-by"><span class="records-created-by">{{ entry.created_by.username|default:"—" }}</span></td>
+            <td class="col-details">
+              <a href="{% url 'journal:entry_detail' entry.pk %}" class="btn btn-ghost btn--sm" onclick="event.stopPropagation()">View</a>
+            </td>
+          </tr>
+          <tr class="entry-logs-row" aria-hidden="true">
+            <td colspan="7">
+              <div class="entry-logs-content">
+                {% for log in entry.activity_logs %}
+                <div class="entry-log-item">{{ log.user.username }} — {{ log.get_action_display }} on {{ log.timestamp|date:"M j, Y" }} at {{ log.timestamp|time:"g:i A" }}</div>
+                {% empty %}
+                <div class="entry-log-item entry-log-empty">No activity logs for this entry.</div>
+                {% endfor %}
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="records-empty">
+              No records yet. <a href="{% url 'journal:home' %}">Go to Home</a> to record your first sale or expense.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="actions" style="margin-top: 2rem;">
+  {% if page_obj.has_previous %}
+  <a href="?{% if date_from %}date_from={{ date_from }}{% endif %}{% if date_to %}{% if date_from %}&amp;{% endif %}date_to={{ date_to }}{% endif %}{% if date_from or date_to %}&amp;{% endif %}page={{ page_obj.previous_page_number }}" class="btn btn-secondary">Previous</a>
+  {% endif %}
+  <span style="align-self: center;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?{% if date_from %}date_from={{ date_from }}{% endif %}{% if date_to %}{% if date_from %}&amp;{% endif %}date_to={{ date_to }}{% endif %}{% if date_from or date_to %}&amp;{% endif %}page={{ page_obj.next_page_number }}" class="btn btn-secondary">Next</a>
+  {% endif %}
+</nav>
+{% endif %}
+
+<script>
+(function() {
+  var toggle = document.getElementById('show-logs-toggle');
+  var tbody = document.getElementById('records-tbody');
+  var STORAGE_KEY = 'records-show-logs';
+  if (!toggle || !tbody) return;
+  function updateVisibility(show) {
+    tbody.classList.toggle('show-logs', !!show);
+    try { sessionStorage.setItem(STORAGE_KEY, show ? '1' : '0'); } catch (e) {}
+  }
+  try {
+    var stored = sessionStorage.getItem(STORAGE_KEY);
+    if (stored === '1') { toggle.checked = true; updateVisibility(true); }
+  } catch (e) {}
+  toggle.addEventListener('change', function() { updateVisibility(toggle.checked); });
+
+  tbody.addEventListener('click', function(e) {
+    var row = e.target.closest('.entry-row');
+    if (row && row.dataset.href && !e.target.closest('a, button')) {
+      window.location.href = row.dataset.href;
+    }
+  });
+})();
+</script>
+{% endblock %}

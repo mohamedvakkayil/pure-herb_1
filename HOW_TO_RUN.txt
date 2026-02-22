@@ -1,0 +1,44 @@
+================================================================================
+  PURE HERB JOURNAL — WHERE CHANGES ARE & HOW TO SEE THEM
+================================================================================
+
+The app that has the modal, Sales/Expense, and Records is the DJANGO app.
+All edits (modal redesign, footer buttons, scroll) are in these files:
+
+  • templates/base.html              (loads CSS/JS)
+  • templates/journal/entry_list.html (modal HTML, Sales/Expense forms)
+  • static/css/styles.css            (modal and page styles)
+  • static/js/modal.js               (modal open/close, submit)
+
+Do NOT open "index.html" in the browser — that is an old static shell with
+no modal and no Records. It will never show the changes.
+
+--------------------------------------------------------------------------------
+  HOW TO RUN THE APP (and see your changes)
+--------------------------------------------------------------------------------
+
+1. Open a terminal.
+
+2. Go to this project root (the folder that contains manage.py):
+     cd "/Volumes/Applications/cursor/leaf cursor2"
+
+3. Start the Django server:
+     python manage.py runserver
+
+4. In your browser, open:
+     http://127.0.0.1:8000/
+
+5. If you still see old layout (e.g. no footer buttons in the modal):
+     • Hard refresh:  Mac = Cmd+Shift+R   Windows/Linux = Ctrl+Shift+R
+     • Or open DevTools (F12) → Network tab → check "Disable cache" → refresh
+
+--------------------------------------------------------------------------------
+  Quick check
+--------------------------------------------------------------------------------
+
+When it’s working you should see:
+  • "Records" page with "Sales" and "Expense" buttons
+  • Clicking one opens a modal with a fixed footer at the bottom
+  • "Cancel" and "Record Sale" (or "Record Expense") always visible in that footer
+
+================================================================================

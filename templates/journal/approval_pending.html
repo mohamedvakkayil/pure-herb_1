@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Approval — Pure Herb{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="entry-card">
+    <h2 class="entry-title">Request Submitted</h2>
+    <p class="entry-body">Your update or delete request has been submitted for approval. An Admin or Manager will review it shortly.</p>
+    <div class="actions">
+      <a href="{% url 'journal:approval_queue' %}" class="btn btn-primary">View Approval Queue</a>
+      <a href="{% url 'journal:home' %}" class="btn btn-secondary">Back to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

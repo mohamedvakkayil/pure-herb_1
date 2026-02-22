@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Submitted — Pure Herb{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="entry-card">
+    <h2 class="entry-title">User Request Submitted</h2>
+    <p class="entry-body">Your user creation request has been submitted for Admin approval.</p>
+    <div class="actions">
+      <a href="{% url 'journal:home' %}" class="btn btn-primary">Back to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

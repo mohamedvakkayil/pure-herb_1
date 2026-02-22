@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ entry.date|date:"M j, Y" }} — Pure Herb{% endblock %}
+
+{% block content %}
+    <div class="section">
+  <div class="entry-card entry-card--read">
+    <span class="entry-badge">{{ entry.get_entry_type_display }}</span>
+    {% if entry.deleted_at %}<span class="entry-badge" style="background: rgba(194,65,12,0.2); color: #9A3412;">Deleted</span>{% endif %}
+    <div class="entry-date">{{ entry.date|date:"F j, Y" }}{% if entry.reference %} · {{ entry.reference }}{% endif %}</div>
+    <h1 class="entry-title">{{ entry.description }}</h1>
+
+    <div class="table-responsive">
+    <table class="entry-table">
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th class="text-right">Debit</th>
+          <th class="text-right">Credit</th>
+          <th>Memo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in entry.lines.all %}
+        <tr>
+          <td>{{ line.account }}</td>
+          <td class="text-right">{% if line.debit %}{{ line.debit|floatformat:2 }}{% else %}—{% endif %}</td>
+          <td class="text-right">{% if line.credit %}{{ line.credit|floatformat:2 }}{% else %}—{% endif %}</td>
+          <td class="text-muted">{{ line.memo|default:"" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td class="text-right">{{ entry.total_debit|floatformat:2 }}</td>
+          <td class="text-right">{{ entry.total_credit|floatformat:2 }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    </div>
+
+    <div class="actions" style="margin-top: 1.5rem;">
+      {% if not entry.deleted_at %}
+      <a href="{% url 'journal:entry_update' entry.pk %}" class="btn btn-primary">Edit</a>
+      <a href="{% url 'journal:entry_delete' entry.pk %}" class="btn btn-secondary">Delete</a>
+      {% endif %}
+      <a href="{% url 'journal:entry_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

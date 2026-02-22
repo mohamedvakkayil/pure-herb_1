@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Approval Queue — Pure Herb{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="records-header">
+    <h1 class="records-title">Approval Queue</h1>
+    <a href="{% url 'journal:home' %}" class="records-back">← Home</a>
+  </div>
+
+  {% if requests %}
+  <div class="entries-grid">
+    {% for ar in requests %}
+    <div class="entry-card">
+      <span class="entry-badge">{{ ar.action|title }}</span>
+      <div class="entry-date">Requested by {{ ar.requested_by.username }} on {{ ar.created_at|date:"M j, Y H:i" }}</div>
+      <h2 class="entry-title">Entry: {{ ar.entry.description|truncatewords:10 }}</h2>
+      <p class="entry-body">Date: {{ ar.entry.date|date:"F j, Y" }}</p>
+      <form method="post" action="{% url 'journal:approval_action' ar.pk %}" style="margin-top: 1rem;">
+        {% csrf_token %}
+        <div class="actions">
+          <button type="submit" name="action" value="approve" class="btn btn-primary">Approve</button>
+          <button type="submit" name="action" value="reject" class="btn btn-secondary">Reject</button>
+        </div>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="entry-card">
+    <p class="entry-body">No pending approval requests.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Management — Pure Herb{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="records-header">
+    <h1 class="records-title">User Management</h1>
+    <a href="{% url 'journal:home' %}" class="records-back">← Home</a>
+  </div>
+
+  <div class="records-table-card">
+    <div class="table-responsive">
+      <table class="entry-table entry-table--records">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Groups</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+          <tr>
+            <td>{{ u.username }}</td>
+            <td class="text-muted">{{ u.email|default:"—" }}</td>
+            <td>
+              {% for g in u.groups.all %}
+              <span class="records-type-badge records-type-badge--sale">{{ g.name }}</span>
+              {% empty %}
+              <span class="text-muted">—</span>
+              {% endfor %}
+            </td>
+            <td>
+              {% if u.is_active %}
+              <span class="records-type-badge records-type-badge--sale">Active</span>
+              {% else %}
+              <span class="records-type-badge records-type-badge--expense">Locked</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'journal:user_reset_password' u.pk %}" class="btn btn-ghost btn--sm" onclick="event.stopPropagation()">Reset password</a>
+              {% if u.pk != user.pk %}
+              <form method="post" action="{% url 'journal:user_toggle_lock' u.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn--sm">
+                  {% if u.is_active %}Lock{% else %}Unlock{% endif %}
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="records-empty">No users found.</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if page_obj and page_obj.has_other_pages %}
+<nav class="actions" style="margin-top: 2rem;">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">Previous</a>
+  {% endif %}
+  <span style="align-self: center;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">Next</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

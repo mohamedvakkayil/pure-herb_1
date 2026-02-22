@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}User Request Approval — Pure Herb{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="records-header">
+    <h1 class="records-title">User Requests</h1>
+    <a href="{% url 'journal:home' %}" class="records-back">← Home</a>
+  </div>
+
+  {% if requests %}
+  <div class="entries-grid">
+    {% for ur in requests %}
+    <div class="entry-card">
+      <div class="entry-date">Requested by {{ ur.requested_by.username }} on {{ ur.created_at|date:"M j, Y H:i" }}</div>
+      <h2 class="entry-title">{{ ur.username }}</h2>
+      <p class="entry-body">Email: {{ ur.email|default:"—" }} · Role: {{ ur.get_role_display }}</p>
+      <form method="post" action="{% url 'journal:user_request_action' ur.pk %}" style="margin-top: 1rem;">
+        {% csrf_token %}
+        <div class="actions">
+          <button type="submit" name="action" value="approve" class="btn btn-primary">Approve</button>
+          <button type="submit" name="action" value="reject" class="btn btn-secondary">Reject</button>
+        </div>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="entry-card">
+    <p class="entry-body">No pending user requests.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

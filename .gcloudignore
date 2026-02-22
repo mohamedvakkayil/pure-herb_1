@@ -1,0 +1,12 @@
+# Do not upload these to App Engine
+.git/
+.gitignore
+.env
+*.pyc
+__pycache__/
+venv/
+db.sqlite3
+live_check_*.png
+*.md
+.cursor/
+*.plan.md
