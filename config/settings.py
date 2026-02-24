@@ -34,16 +34,16 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1')
 
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
-# Render sets RENDER_EXTERNAL_HOSTNAME to your service hostname (e.g. your-app.onrender.com)
-_render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if _render_host:
-    ALLOWED_HOSTS.append(_render_host)
+# Railway sets RAILWAY_PUBLIC_DOMAIN (e.g. your-app.up.railway.app)
+_railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+if _railway_domain:
+    ALLOWED_HOSTS.append(_railway_domain)
 
-# For HTTPS (comma-separated origins, e.g. https://your-app.onrender.com or https://your-app.uc.r.appspot.com)
+# For HTTPS (comma-separated origins, or set automatically for Railway above)
 _csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
-if _render_host:
-    CSRF_TRUSTED_ORIGINS.append('https://' + _render_host)
+if _railway_domain:
+    CSRF_TRUSTED_ORIGINS.append('https://' + _railway_domain)
 
 # Application definition
 
@@ -108,14 +108,9 @@ else:
         'NAME': os.environ.get('DJANGO_DB_NAME', 'pure_herb_db'),
         'USER': os.environ.get('DJANGO_DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DJANGO_DB_PASSWORD', ''),
+        'HOST': os.environ.get('DJANGO_DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DJANGO_DB_PORT', '5432'),
     }
-    _instance_conn = os.environ.get('INSTANCE_CONNECTION_NAME')
-    if _instance_conn:
-        _db_config['HOST'] = '/cloudsql/' + _instance_conn
-        _db_config['PORT'] = ''
-    else:
-        _db_config['HOST'] = os.environ.get('DJANGO_DB_HOST', 'localhost')
-        _db_config['PORT'] = os.environ.get('DJANGO_DB_PORT', '5432')
     DATABASES = {'default': _db_config}
 
 

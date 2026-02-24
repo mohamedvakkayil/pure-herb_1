@@ -26,55 +26,25 @@ A Django-based accounting and financial journal application with the Pure Herb t
 
 5. Open http://127.0.0.1:8000/ in your browser.
 
-## Deploy to Google App Engine
+## Deploy to Railway
 
-1. **Cloud SQL (PostgreSQL)**  
-   Create a Cloud SQL instance, database, and user. Note the instance connection name (`PROJECT_ID:REGION:INSTANCE_NAME`). Set in `app.yaml` (or in App Engine environment variables):
-   - `INSTANCE_CONNECTION_NAME`
-   - `DJANGO_DB_NAME`, `DJANGO_DB_USER`, `DJANGO_DB_PASSWORD`
+1. **Push your code** to GitHub (or connect your repo to Railway).
 
-2. **Environment variables**  
-   Set in Google Cloud Console (App Engine > Settings > Environment variables) or via `gcloud app deploy --set-env-vars`:
-   - `SECRET_KEY` — use a strong random value; do not commit it.
-   - `ALLOWED_HOSTS` — your App Engine host (e.g. `your-app.uc.r.appspot.com`).
-   - Optionally `CSRF_TRUSTED_ORIGINS` — e.g. `https://your-app.uc.r.appspot.com`.
+2. **Create a project** at [railway.app](https://railway.app): **New Project** → **Deploy from GitHub repo** → select this repository.
 
-3. **Static files**  
-   Run before deploying so `staticfiles/` is present and uploaded:
+3. **Add PostgreSQL:** In the same project, click **New** → **Database** → **PostgreSQL**. Railway creates a Postgres service and exposes `DATABASE_URL`. In your web service, add a variable: `DATABASE_URL` (use the “Connect” reference from the Postgres service or copy the connection URL).
+
+4. **Configure the web service:** In the web service settings, set:
+   - **Build command:** `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput`
+   - **Start command:** leave default (Railway uses the `Procfile`: `gunicorn config.wsgi --bind 0.0.0.0:$PORT`), or set it explicitly to the same.
+   - **Environment variables:** `DATABASE_URL` (from Postgres), `SECRET_KEY` (generate a strong random value). Optionally `DEBUG=False`. Railway sets `PORT` and `RAILWAY_PUBLIC_DOMAIN` automatically.
+
+5. **Create a superuser:** After the first deploy, run locally with Railway’s Postgres URL (Dashboard → Postgres → Connect → copy the URL or variable):
    ```bash
-   python manage.py collectstatic --noinput
+   export DATABASE_URL='postgresql://...'   # paste Railway Postgres URL
+   python manage.py createsuperuser
    ```
-
-4. **Deploy**  
-   From the project root:
-   ```bash
-   gcloud app deploy
-   ```
-   After the first deploy, update `app.yaml` or env vars with the actual app URL if you used a placeholder.
-
-## Deploy to Render
-
-1. **Push your code** to GitHub, GitLab, or Bitbucket.
-
-2. **Create a Blueprint**  
-   - Go to [dashboard.render.com](https://dashboard.render.com) → **New** → **Blueprint**.  
-   - Connect the repo that contains `render.yaml`.  
-   - Render will create a web service and a PostgreSQL database and wire `DATABASE_URL` and `SECRET_KEY` automatically.
-
-3. **Deploy**  
-   - Click **Apply**; Render runs `build.sh` (install deps, collectstatic, migrate) then starts the app with Gunicorn.  
-   - Your app will be at `https://pure-herb-journal.onrender.com` (or the name you give the service).
-
-4. **Optional – manual setup**  
-   - Instead of a Blueprint, create a **Web Service** and a **PostgreSQL** database manually.  
-   - Set **Build Command:** `./build.sh`  
-   - Set **Start Command:** `gunicorn config.wsgi --bind 0.0.0.0:$PORT`  
-   - Add env vars: `DATABASE_URL` (from the database), `SECRET_KEY` (generate in dashboard).  
-   - `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` are set automatically from `RENDER_EXTERNAL_HOSTNAME`.
-
-5. **Create a superuser** (after first deploy)  
-   - In the Render dashboard, open your web service → **Shell** → run:  
-     `python manage.py createsuperuser`
+   To reset a password: `python manage.py changepassword mohamed` (with the same `DATABASE_URL` set).
 
 ## Features
 
